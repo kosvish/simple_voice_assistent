@@ -15,6 +15,33 @@ class VoiceAssistant:
     recognition_language = ''
 
 
+def setup_assistant_voice():
+    """
+    Установка голоса по умолчанию
+    """
+    voices = ttsEngine.getProperty('voices')
+
+    if assistant.speech_language == 'en':
+        assistant.recognition_language = 'en-US'
+        if assistant.sex == 'female':
+            ttsEngine.setProperty('voice', voices[1].id)
+        else:
+            ttsEngine.setProperty('voice', voices[2].id)
+
+    else:
+        assistant.recognition_language = 'ru-RU'
+        ttsEngine.setProperty('voice', voices[0].id)
+
+
+def play_voice_assistant_speech(text_to_speech):
+    """
+    Проигрование речи ответов ассистента
+    :param text_to_speech: текст, который нужно преобразовать в реч
+    """
+    ttsEngine.say(str(text_to_speech))
+    ttsEngine.runAndWait()
+
+
 def record_and_recognize_audio(*args: tuple):
     """
     Запись и распознование аудио
@@ -76,4 +103,3 @@ if __name__ == "__main__":
         # Тестовый запрос
         if command == 'привет':
             play_voice_assistant_speech('Здравствуй')
-
