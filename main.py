@@ -3,6 +3,10 @@ import speech_recognition
 import wave  # Создание и чтение аудиофайлов формата wav
 import json  # работа с json файлами и строками
 import os  # Работа с файловой системой
+# Машинное обучение
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
 
 
 class VoiceAssistant:
@@ -74,28 +78,6 @@ def record_and_recognize_audio(*args: tuple):
         return recognized_data
 
 
-def make_preparations():
-    """
-    Подготовка глобальных переменных к запуску приложения
-    """
-    global recognizer, microphone, ttsEngine, assistant
-
-    recognizer = speech_recognition.Recognizer()
-    microphone = speech_recognition.Microphone()
-
-    # инициализация интсрумента речи
-    ttsEngine = pyttsx3.init()
-
-    # настройка данных голосового помощника
-    assistant = VoiceAssistant()
-    assistant.name = 'Alice'
-    assistant.sex = 'female'
-    assistant.speech_language = 'ru'
-
-    # установка голоса по умолчанию
-    setup_assistant_voice()
-
-
 def prepare_corpus():
     """
     Подготовка модели для угадывания намерений пользователя
@@ -121,6 +103,36 @@ config = {
         }
     }
 }
+
+
+def make_preparations():
+    """
+    Подготовка глобальных переменных к запуску приложения
+    """
+    global recognizer, microphone, ttsEngine, assistant, vectorizer, classifier_probability, classifier
+
+    # инициализация интсрумента распознования
+    recognizer = speech_recognition.Recognizer()
+    microphone = speech_recognition.Microphone()
+
+    # инициализация интсрумента речи
+    ttsEngine = pyttsx3.init()
+
+    # настройка данных голосового помощника
+    assistant = VoiceAssistant()
+    assistant.name = 'Alice'
+    assistant.sex = 'female'
+    assistant.speech_language = 'ru'
+
+    # установка голоса по умолчанию
+    setup_assistant_voice()
+
+    # Подготовка корпуса для распознование запросов пользователя с некоторой верятностью
+    vectorizer = TfidfVectorizer(analyzer='char', ngram_range=(2, 3))
+    classifier_probability = LogisticRegression()
+    classifier = LinearSVC()
+    prepare_corpus()
+
 
 if __name__ == "__main__":
     make_preparations()
