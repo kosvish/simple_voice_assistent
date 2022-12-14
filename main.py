@@ -1,16 +1,13 @@
 import random
 import webbrowser
 
-import colored as colored
+
 import pyttsx3
 import speech_recognition
 import wave  # Создание и чтение аудиофайлов формата wav
 import json  # работа с json файлами и строками
 import os  # Работа с файловой системой
-# Машинное обучение
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import LinearSVC
+
 
 
 class VoiceAssistant:
@@ -93,6 +90,7 @@ def play_greetings(*args: tuple):
     play_voice_assistant_speech(greetings[random.randint(0, len(greetings) - 1)])
 
 
+
 def search_for_video_on_youtube(*args: tuple):
     """
     Поиск видео на YouTube с автоматическим открытием ссылки на список результатов
@@ -105,68 +103,16 @@ def search_for_video_on_youtube(*args: tuple):
     play_voice_assistant_speech("Here is what I found on youtube")
 
 
-def prepare_corpus():
+def play_failure_phrase(*args: tuple):
     """
-    Подготовка модели для угадывания намерений пользователя
+    Проигрование случайной фразы при неудачно распозновании
     """
-    corpus = []
-    target_vector = []
-    for intent_name, intent_data in config['intents'].items():
-        for example in intent_data['examples']:
-            corpus.append(example)
-            target_vector.append(intent_name)
+    failure_phrases = [
+        'Не могли бы повторить?',
+        'Что вы сказали?'
+    ]
+    play_voice_assistant_speech(failure_phrases[random.randint(0, len(failure_phrases) - 1)])
 
-    training_vector = vectorizer.fit_transform(corpus)
-    classifier_probability.fit(training_vector, target_vector)
-    classifier.fit(training_vector, target_vector)
-
-
-def get_intent(request):
-    """
-    Получение наиболее вероятного намерения пользователя в зависимости от запроса пользователя
-    :param request: запрос пользователя
-    :return: наиболее вероятное намерение
-    """
-    best_intent = classifier.predict(vectorizer.transform([request]))[0]
-
-    index_of_best_intent = list(classifier_probability.classes_).index(best_intent)
-    probabilities = classifier_probability.predict_proba(vectorizer.transform([request]))[0]
-
-    best_intent_probability = probabilities[index_of_best_intent]
-
-    # При добавлении новых намерений стоит уменьшать этот показатель
-    # print(best_intent_probability)
-    if best_intent_probability > 0.157:
-        return best_intent
-
-
-def make_preparations():
-    """
-    Подготовка глобальных переменных к запуску приложения
-    """
-    global recognizer, microphone, ttsEngine, assistant, vectorizer, classifier_probability, classifier
-
-    # инициализация интсрумента распознования
-    recognizer = speech_recognition.Recognizer()
-    microphone = speech_recognition.Microphone()
-
-    # инициализация интсрумента речи
-    ttsEngine = pyttsx3.init()
-
-    # настройка данных голосового помощника
-    assistant = VoiceAssistant()
-    assistant.name = 'Alice'
-    assistant.sex = 'female'
-    assistant.speech_language = 'ru'
-
-    # установка голоса по умолчанию
-    setup_assistant_voice()
-
-    # Подготовка корпуса для распознование запросов пользователя с некоторой верятностью
-    vectorizer = TfidfVectorizer(analyzer='char', ngram_range=(2, 3))
-    classifier_probability = LogisticRegression()
-    classifier = LinearSVC()
-    prepare_corpus()
 
 
 config = {
@@ -181,42 +127,17 @@ config = {
                          'find video', 'find on youtube'],
             'responses': search_for_video_on_youtube
         }
-    }
+    },
+    'failure_phrases': play_failure_phrase
 }
 
 if __name__ == "__main__":
-    make_preparations()
 
     while True:
         # старт записи речи с последующим выводом распознанной речи и удалением записанного в микрофон аудио
         voice_input = record_and_recognize_audio()
-
-        if os.path.exists("microphone-results.wav"):
-            os.remove("microphone-results.wav")
-
+        os.remove("microphone-results.wav")
+        print(voice_input)
 
         # отделение комманд от дополнительной информации (аргументов)
-        if voice_input:
-            voice_input_parts = voice_input.split(" ")
-
-            # если было сказано одно слово - выполняем команду сразу без дополнительных аргументов
-            if len(voice_input_parts) == 1:
-                intent = get_intent(voice_input)
-                if intent:
-                    config["intents"][intent]["responses"]()
-                else:
-                    config["failure_phrases"]()
-
-            # в случае длинной фразы - выполняется поиск ключевой фразы и аргументов через каждое слово,
-            # пока не будет найдено совпадение
-            if len(voice_input_parts) > 1:
-                for guess in range(len(voice_input_parts)):
-                    intent = get_intent((" ".join(voice_input_parts[0:guess])).strip())
-                    print(intent)
-                    if intent:
-                        command_options = [voice_input_parts[guess:len(voice_input_parts)]]
-                        print(command_options)
-                        config["intents"][intent]["responses"](*command_options)
-                        break
-                    if not intent and guess == len(voice_input_parts)-1:
-                        config["failure_phrases"]()
+        voice_input_parts = voice_input.split(" ")
