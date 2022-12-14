@@ -94,15 +94,23 @@ def prepare_corpus():
     classifier.fit(training_vector, target_vector)
 
 
-config = {
-    'intents': {
-        'greeting': {
-            'examples': ['привет', 'здравствуй', 'ку',
-                         'hello', 'good morning'],
-            'responses': play_greetings
-        }
-    }
-}
+def get_intent(request):
+    """
+    Получение наиболее вероятного намерения пользователя в зависимости от запроса пользователя
+    :param request: запрос пользователя
+    :return: наиболее вероятное намерение
+    """
+    best_intent = classifier.predict(vectorizer.transform([request]))[0]
+
+    index_of_best_intent = list(classifier_probability.classes_).index(best_intent)
+    probabilities = classifier_probability.predict_proba(vectorizer.transform([request]))[0]
+
+    best_intent_probability = probabilities[index_of_best_intent]
+
+    # При добавлении новых намерений стоит уменьшать этот показатель
+    print(best_intent_probability)
+    if best_intent_probability > 0.157:
+        return best_intent
 
 
 def make_preparations():
@@ -133,6 +141,16 @@ def make_preparations():
     classifier = LinearSVC()
     prepare_corpus()
 
+
+config = {
+    'intents': {
+        'greeting': {
+            'examples': ['привет', 'здравствуй', 'ку',
+                         'hello', 'good morning'],
+            'responses': play_greetings
+        }
+    }
+}
 
 if __name__ == "__main__":
     make_preparations()
