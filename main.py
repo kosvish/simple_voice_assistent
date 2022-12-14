@@ -1,4 +1,6 @@
 import random
+import webbrowser
+
 import pyttsx3
 import speech_recognition
 import wave  # Создание и чтение аудиофайлов формата wav
@@ -90,6 +92,16 @@ def play_greetings(*args: tuple):
     play_voice_assistant_speech(greetings[random.randint(0, len(greetings) - 1)])
 
 
+def search_for_video_on_youtube(*args: tuple):
+    """
+    Поиск видео на YouTube с автоматическим открытием ссылки на список результатов
+    :param args: фраза поискового запроса
+    """
+    if not args[0]: return
+    search_term = " ".join(args[0])
+    url = "https://www.youtube.com/results?search_query=" + search_term
+    webbrowser.get().open(url)
+    play_voice_assistant_speech("Here is what I found on youtube")
 
 
 def prepare_corpus():
@@ -162,6 +174,11 @@ config = {
             'examples': ['привет', 'здравствуй', 'ку',
                          'hello', 'good morning'],
             'responses': play_greetings
+        },
+        'youtube_search': {
+            'examples': ['найди видео', 'покажи видео',
+                         'find video', 'find on youtube'],
+            'responses': search_for_video_on_youtube
         }
     }
 }
@@ -188,4 +205,3 @@ if __name__ == "__main__":
                     config['intents'][intent]['responses']()
                 else:
                     config['failure_phrases']()
-
