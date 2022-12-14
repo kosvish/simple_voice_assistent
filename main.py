@@ -1,3 +1,4 @@
+import random
 import pyttsx3
 import speech_recognition
 import wave  # Создание и чтение аудиофайлов формата wav
@@ -76,6 +77,19 @@ def record_and_recognize_audio(*args: tuple):
             print('Проверьте пожалуйта ваше соединение с интернетом')
 
         return recognized_data
+
+
+def play_greetings(*args: tuple):
+    """
+    Проигрование случайной приветсвенной фразы
+    """
+    greetings = [
+        'Привет! Чем я могу помочь?',
+        'Рада  снова тебя видеть! Чем я могу помочь?'
+    ]
+    play_voice_assistant_speech(greetings[random.randint(0, len(greetings) - 1)])
+
+
 
 
 def prepare_corpus():
@@ -166,3 +180,12 @@ if __name__ == "__main__":
         # отделение команд от дополнительной информации
         if voice_input:
             voice_input_parts = voice_input.split(' ')
+
+            # если было сказано одно слово - выполняем команду сразу без доп аргументов
+            if len(voice_input_parts) == 1:
+                intent = get_intent(voice_input)
+                if intent:
+                    config['intents'][intent]['responses']()
+                else:
+                    config['failure_phrases']()
+
