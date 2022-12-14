@@ -1,6 +1,7 @@
 import random
 import webbrowser
 
+import colored as colored
 import pyttsx3
 import speech_recognition
 import wave  # Создание и чтение аудиофайлов формата wav
@@ -134,7 +135,7 @@ def get_intent(request):
     best_intent_probability = probabilities[index_of_best_intent]
 
     # При добавлении новых намерений стоит уменьшать этот показатель
-    print(best_intent_probability)
+    # print(best_intent_probability)
     if best_intent_probability > 0.157:
         return best_intent
 
@@ -187,21 +188,35 @@ if __name__ == "__main__":
     make_preparations()
 
     while True:
-        # Старт записи речи с последующим выводом распознаной речи и удалением записанного в микрофон
+        # старт записи речи с последующим выводом распознанной речи и удалением записанного в микрофон аудио
         voice_input = record_and_recognize_audio()
-        if os.path.exists('microphone-results.wav'):
-            os.remove('microphone-results.wav')
 
-        print(voice_input)
+        if os.path.exists("microphone-results.wav"):
+            os.remove("microphone-results.wav")
 
-        # отделение команд от дополнительной информации
+
+        # отделение комманд от дополнительной информации (аргументов)
         if voice_input:
-            voice_input_parts = voice_input.split(' ')
+            voice_input_parts = voice_input.split(" ")
 
-            # если было сказано одно слово - выполняем команду сразу без доп аргументов
+            # если было сказано одно слово - выполняем команду сразу без дополнительных аргументов
             if len(voice_input_parts) == 1:
                 intent = get_intent(voice_input)
                 if intent:
-                    config['intents'][intent]['responses']()
+                    config["intents"][intent]["responses"]()
                 else:
-                    config['failure_phrases']()
+                    config["failure_phrases"]()
+
+            # в случае длинной фразы - выполняется поиск ключевой фразы и аргументов через каждое слово,
+            # пока не будет найдено совпадение
+            if len(voice_input_parts) > 1:
+                for guess in range(len(voice_input_parts)):
+                    intent = get_intent((" ".join(voice_input_parts[0:guess])).strip())
+                    print(intent)
+                    if intent:
+                        command_options = [voice_input_parts[guess:len(voice_input_parts)]]
+                        print(command_options)
+                        config["intents"][intent]["responses"](*command_options)
+                        break
+                    if not intent and guess == len(voice_input_parts)-1:
+                        config["failure_phrases"]()
