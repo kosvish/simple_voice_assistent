@@ -1,13 +1,11 @@
 import random
 import webbrowser
 
-
 import pyttsx3
 import speech_recognition
 import wave  # Создание и чтение аудиофайлов формата wav
 import json  # работа с json файлами и строками
 import os  # Работа с файловой системой
-
 
 
 class VoiceAssistant:
@@ -90,7 +88,6 @@ def play_greetings(*args: tuple):
     play_voice_assistant_speech(greetings[random.randint(0, len(greetings) - 1)])
 
 
-
 def search_for_video_on_youtube(*args: tuple):
     """
     Поиск видео на YouTube с автоматическим открытием ссылки на список результатов
@@ -103,32 +100,23 @@ def search_for_video_on_youtube(*args: tuple):
     play_voice_assistant_speech("Here is what I found on youtube")
 
 
-def play_failure_phrase(*args: tuple):
+def execute_command_with_name(command_name: str, *args: list):
     """
-    Проигрование случайной фразы при неудачно распозновании
+    Выполнение заданной пользователем команды с доп аргументами
+    :param command_name: название команнды
+    :param args: аргументы которые будут переданны в функцию
     """
-    failure_phrases = [
-        'Не могли бы повторить?',
-        'Что вы сказали?'
-    ]
-    play_voice_assistant_speech(failure_phrases[random.randint(0, len(failure_phrases) - 1)])
+    for key in commands.keys():
+        if command_name in key:
+            commands[key](*args)
+        else:
+            print('Команда не найдена')
 
 
-
-config = {
-    'intents': {
-        'greeting': {
-            'examples': ['привет', 'здравствуй', 'ку',
-                         'hello', 'good morning'],
-            'responses': play_greetings
-        },
-        'youtube_search': {
-            'examples': ['найди видео', 'покажи видео',
-                         'find video', 'find on youtube'],
-            'responses': search_for_video_on_youtube
-        }
-    },
-    'failure_phrases': play_failure_phrase
+# перечень комманд в виде hashable-tuple словаря
+commands = {
+    ('привет', 'здравствуй', 'доброе утро'): play_greetings,
+    ('видео', 'ютуб',): search_for_video_on_youtube,
 }
 
 if __name__ == "__main__":
@@ -156,4 +144,7 @@ if __name__ == "__main__":
         print(voice_input)
 
         # отделение комманд от дополнительной информации (аргументов)
-        voice_input_parts = voice_input.split(" ")
+        voice_input = voice_input.split(" ")
+        command = voice_input[0]
+        command_options = [str(input_part) for input_part in voice_input[1:len(voice_input)]]
+        execute_command_with_name(command, command_options)
