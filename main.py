@@ -74,13 +74,16 @@ def record_and_recognize_audio(*args: tuple):
         return recognized_data
 
 
-if __name__ == "__main__":
+def make_preparations():
+    """
+    Подготовка глобальных переменных к запуску приложения
+    """
+    global recognizer, microphone, ttsEngine, assistant
 
-    # инициализация инструментов распознавания и ввода речи
     recognizer = speech_recognition.Recognizer()
     microphone = speech_recognition.Microphone()
 
-    # инициализация инструмента синтеза речи
+    # инициализация интсрумента речи
     ttsEngine = pyttsx3.init()
 
     # настройка данных голосового помощника
@@ -89,17 +92,47 @@ if __name__ == "__main__":
     assistant.sex = 'female'
     assistant.speech_language = 'ru'
 
+    # установка голоса по умолчанию
+    setup_assistant_voice()
+
+
+def prepare_corpus():
+    """
+    Подготовка модели для угадывания намерений пользователя
+    """
+    corpus = []
+    target_vector = []
+    for intent_name, intent_data in config['intents'].items():
+        for example in intent_data['examples']:
+            corpus.append(example)
+            target_vector.append(intent_name)
+
+    training_vector = vectorizer.fit_transform(corpus)
+    classifier_probability.fit(training_vector, target_vector)
+    classifier.fit(training_vector, target_vector)
+
+
+config = {
+    'intents': {
+        'greeting': {
+            'examples': ['привет', 'здравствуй', 'ку',
+                         'hello', 'good morning'],
+            'responses': play_greetings
+        }
+    }
+}
+
+if __name__ == "__main__":
+    make_preparations()
+
     while True:
-        # старт записи речи с последующим выводом распознанной речи
+        # Старт записи речи с последующим выводом распознаной речи и удалением записанного в микрофон
         voice_input = record_and_recognize_audio()
-        # Удаление записанного в микрофон аудио
-        os.remove('microphone-results.wav')
+        if os.path.exists('microphone-results.wav'):
+            os.remove('microphone-results.wav')
+
         print(voice_input)
 
-        # отделение команд от дополнительной информации (аргументов)
-        voice_input = voice_input.split(' ')
-        command = voice_input[0]
-
-        # Тестовый запрос
-        if command == 'привет':
-            play_voice_assistant_speech('Здравствуй')
+        # отделение команд от дополнительной информации
+        if voice_input:
+            voice_input_parts = voice_input.split(' ')
