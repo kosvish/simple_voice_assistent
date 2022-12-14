@@ -133,6 +133,22 @@ config = {
 
 if __name__ == "__main__":
 
+    # инициализация интсрументов распознания и ввода речи
+    recognizer = speech_recognition.Recognizer()
+    microphone = speech_recognition.Microphone()
+
+    # инициализация инструмента синтеза речи
+    ttsEngine = pyttsx3.init()
+
+    # настройка данных голосового помощника
+    assistant = VoiceAssistant()
+    assistant.name = 'Alice'
+    assistant.sex = 'female'
+    assistant.speech_language = 'ru'
+
+    # установка голоса по умолчанию
+    setup_assistant_voice()
+
     while True:
         # старт записи речи с последующим выводом распознанной речи и удалением записанного в микрофон аудио
         voice_input = record_and_recognize_audio()
