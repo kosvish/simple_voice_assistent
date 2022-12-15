@@ -1,11 +1,11 @@
 import random
 import traceback
 import webbrowser
+from googlesearch import search
 
 import pyttsx3
 import speech_recognition
-import wave  # Создание и чтение аудиофайлов формата wav
-import json  # работа с json файлами и строками
+
 import os  # Работа с файловой системой
 
 
@@ -101,6 +101,30 @@ def search_for_term_on_google(*args: tuple):
     # открытие ссылки на поисковик в бразуере
     url = 'https://google.com/search?q=' + search_term
     webbrowser.get().open(url)
+
+    # альтернативный поиск с автоматическим открытием ссылок на результаты
+    search_results = []
+    try:
+        for _ in search(
+                search_term,  # что ищем
+                tld='com',  # домен
+                lang=assistant.speech_language,  # используем язык, на котором говорит наш ассистент
+                num=1,  # количество результатов на странице,
+                start=0,  # индекс первого результата
+                stop=1,  # индекс последнего результата(открывается первая страница)
+                pause=1.0,  # задержка между HTTP-запросами
+        ):
+            search_results.append(_)
+            webbrowser.get().open(_)
+
+    # во избежании ошибок , будем производить отлов с последующим выводом без остановки программы
+    except:
+        play_voice_assistant_speech('Кажется, у нас беда. Смотрите журналы для получения дополнительной информации')
+        traceback.print_exc()
+        return
+
+    print(search_results)
+    play_voice_assistant_speech('Вот что я нашла для {} в Google'.format(search_term))
 
 
 def search_for_video_on_youtube(*args: tuple):
