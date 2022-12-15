@@ -39,8 +39,7 @@ def setup_assistant_voice():
 
 def play_voice_assistant_speech(text_to_speech):
     """
-    Проигрование речи ответов ассистента
-    :param text_to_speech: текст, который нужно преобразовать в реч
+    Проигрование речи
     """
     ttsEngine.say(str(text_to_speech))
     ttsEngine.runAndWait()
@@ -143,7 +142,7 @@ def search_for_video_on_youtube(*args: tuple):
 def execute_command_with_name(command_name: str, *args: list):
     """
     Выполнение заданной пользователем команды с доп аргументами
-    :param command_name: название команнды
+    :param command_name: название команды
     :param args: аргументы которые будут переданны в функцию
     """
     for key in commands.keys():
