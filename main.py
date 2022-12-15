@@ -1,4 +1,5 @@
 import random
+import traceback
 import webbrowser
 
 import pyttsx3
@@ -64,12 +65,13 @@ def record_and_recognize_audio(*args: tuple):
 
         except speech_recognition.WaitTimeoutError:
             print('Не могли бы вы проверить, включен ли ваш микрофон?')
+            traceback.print_exc()
             return
 
         # Использование онлайн-распознание через Гугл
         try:
             print('Распознование началось...')
-            recognized_data = recognizer.recognize_google(audio, language='ru').lower()
+            recognized_data = recognizer.recognize_google(audio, language=assistant.recognition_language).lower()
 
         except speech_recognition.UnknownValueError:
             print('Проверьте пожалуйта ваше соединение с интернетом')
@@ -88,6 +90,19 @@ def play_greetings(*args: tuple):
     play_voice_assistant_speech(greetings[random.randint(0, len(greetings) - 1)])
 
 
+def search_for_term_on_google(*args: tuple):
+    """
+    Поиск в Гугл с автоматическим открытием ссылок(если возможно)
+    :param args:
+    """
+    if not args[0]: return
+    search_term = ' '.join(args[0])
+
+    # открытие ссылки на поисковик в бразуере
+    url = 'https://google.com/search?q=' + search_term
+    webbrowser.get().open(url)
+
+
 def search_for_video_on_youtube(*args: tuple):
     """
     Поиск видео на YouTube с автоматическим открытием ссылки на список результатов
@@ -95,9 +110,10 @@ def search_for_video_on_youtube(*args: tuple):
     """
     if not args[0]: return
     search_term = " ".join(args[0])
+
+    # открытие ссылки на поисковик в браузере
     url = "https://www.youtube.com/results?search_query=" + search_term
     webbrowser.get().open(url)
-    play_voice_assistant_speech("Here is what I found on youtube")
 
 
 def execute_command_with_name(command_name: str, *args: list):
@@ -117,6 +133,7 @@ def execute_command_with_name(command_name: str, *args: list):
 commands = {
     ('привет', 'здравствуй', 'доброе утро'): play_greetings,
     ('видео', 'ютуб',): search_for_video_on_youtube,
+    ('найди', 'поищи', 'гугл'): search_for_term_on_google,
 }
 
 if __name__ == "__main__":
